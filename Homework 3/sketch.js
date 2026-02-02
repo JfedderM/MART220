@@ -6,8 +6,7 @@ var highlightX = 0;
 var highlightY = 0;
 var highlightTimer = 0; // movement timer
 
-function setup()
-{
+function setup() {
 createCanvas(800,600);
 }
 
