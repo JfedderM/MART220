@@ -1,3 +1,5 @@
+// I received help understanding arrays for this project. I used examples from the lessons but the work is mine all code is typed by ne
+
 let burgerImg; // Holds the burger picture
 
 let baldHead = []; // stores the head pictures
