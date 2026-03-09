@@ -64,12 +64,14 @@ foods.push(new Food(700, 150, 120, 230, 160, 60, false));
 foods.push(new Food(100, 450, 95, 230, 160, 60, false));
 }
 
-function draw() {
-background(180, 30, 30);
-
-if (!music.isPlaying()){ // starts background music
+function mousePressed() { // starts background music
+if (!music.isPlaying()){
 music.loop();
 }
+}
+
+function draw() {
+background(180, 30, 30);
 
 let current; //choose correct animation
 if (facing == "right") {
