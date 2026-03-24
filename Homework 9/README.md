@@ -1,3 +1,5 @@
+# Reflection
+
 For this project, I converted my previous game to use p5.play. Starting with getting the player sprite and movement working, then adding animations, collisions, a score and health. I spent a lot of time
 debugging switching from my old code to using sprites was a bit overwhelming. I also spent time adjusting things like obstacles, borders, and visuals so the game felt more like my original idea.
 
