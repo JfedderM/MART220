@@ -1,28 +1,30 @@
-// for this assignment i used examples from the lessons, chatgpt to help debug and understsand p5.play better
-// the final game refects my own work and design choices.   
+// For this assignment I used examples from the lessons and ChatGPT to help debug.
+// ChatGPT was used to help with errors, and help me improve game logic.
+// The end result is my own work and design decisions
+
+let particles = [];
 
 let music; // background musci
 let goodSound; // sound for fresh pizza
 let badSound; // sound for rotten pizza
 
-let borders;
+let borders; // canvas boundaries
+let obstacles;
 
 let gameOver = false;
 let win = false;
 
-let obstacles;
+let pizzas; // good food
+let score = 0; // player svore
+let rottenPizzas; // bad food
+let health = 5; // player health
 
-let pizzas;
-let score = 0;
-let rottenPizzas;
-let health = 3;
+let walkLeft = []; // animation frames for walking left
+let walkRight = []; // animation frames for walking right
+let idleLeft = []; // idle animation left
+let idleRight = []; // idle animation right
 
-let walkLeft = [];
-let walkRight = [];
-let idleLeft = [];
-let idleRight = [];
-
-let player;
+let player; // chef character
 
 function preload() { // load the chefs animation
 idleLeft[0] = "images/chef6.png";
@@ -44,12 +46,35 @@ goodSound = loadSound("sounds/positive.mp3");
 badSound = loadSound("sounds/negative.mp3");
 }
 
+class Particle { // particle system for hit efffects
+constructor(x, y) {
+this.x = x;
+this.y = y;
+this.vx = random(-1, 1);
+this.vy = random(-5, -1);
+this.alpha = 255;
+}
+finished() {
+return this.alpha < 0;
+}
+update() {
+this.x += this.vx;
+this.y += this.vy;
+this.alpha -= 5;
+}
+show() {
+noStroke();
+fill(255, this.alpha);
+ellipse(this.x, this.y, 10);
+}
+}
 
 function setup() {
 new Canvas(800, 600);
 
-player = new Sprite(200, 200, 50, 50); // chef (the player)
+player = new Sprite(200, 200, 50, 50); // chef
 player.image = "images/chef1.png";
+player.scale = 0.5;
 player.rotationLock = true;
 
 player.addAni("idleLeft", idleLeft); // add chef animations
@@ -60,9 +85,9 @@ player.addAni("walkRight", walkRight);
 player.changeAni("idleRight");
 player.ani.frameDelay = 6;
 
-pizzas = new Group(); // make fresh pizzas
+pizzas = new Group(); // group fr fresh pizzas
 
-for (let i = 0; i < 4; i++) {
+for (let i = 0; i < 5; i++) {
 let p = new Sprite(
 random(100, 700),
 random(100, 500), 40, 40);
@@ -71,7 +96,7 @@ p.scale = 0.8;
 pizzas.add(p);
 }
 
-rottenPizzas = new Group(); // make rotten pizzas
+rottenPizzas = new Group(); // group for rotten pizzas
 
 for (let i = 0; i < 5; i++) {
 let r = new Sprite(
@@ -79,6 +104,11 @@ random(100, 700),
 random(100, 500), 40, 40);
 r.image = "images/pizza2.png";
 r.scale = 0.8;
+r.health = 3;
+
+r.vel.x = random(-3, 3);
+r.vel.y = random(-3, 3);
+
 rottenPizzas.add(r);
 }
 
@@ -104,7 +134,7 @@ o4.color = color(180, 30, 30);
 o4.collider = "static";
 obstacles.add(o4);
 
-borders = new Group(); // make borders
+borders = new Group(); // group for canvas boundaries
 
 let topBorder = new Sprite(400, 0, 800, 20);
 topBorder.collider = "static";
@@ -141,18 +171,19 @@ stroke(0);
 strokeWeight(4);
 fill(255);
 
-if (!gameOver && score === 0 && health === 3) // instructions
+if (!gameOver && score === 0 && health === 5) { // instructions
 fill(255);
-textSize(22);
+textSize(17);
 textAlign(CENTER);
-text("Collect the fresh pizzas and avoid the rotten ones!", width / 2, 50)
+text("Collect the fresh pizzas, avoid the rotten ones and use x to attack!", width / 2, 50)
+}
 
-if (score >= 10) { // win and lose conditions
+if (score >= 30) { // win condition
 gameOver = true;
  win = true;
 }
 
-if (health <= 0) {
+if (health <= 0) { // lose condition
 gameOver = true;
 win = false;
 }
@@ -180,10 +211,35 @@ player.changeAni("walkLeft");
 player.changeAni("idleRight");
 }
 
-player.overlaps(pizzas, collectPizza);
-player.overlaps(rottenPizzas, hitRottenPizza);
+if (kb.pressing("x")) { // hit rotten pizzas
+
+for (let i = 0; i < rottenPizzas.length; i++) {
+let r = rottenPizzas[i];
+let d = dist(player.x, player.y, r.x, r.y);
+if (d < 80) {
+hitRottenPizza(player, r);
+}
+}
+}
+
+player.overlaps(pizzas, collectPizza); // collect fresh pizzas
+player.overlaps(rottenPizzas, hurtPlayer); // rotten pizzas damage health
+
 player.collides(obstacles);
 player.collides(borders);
+
+rottenPizzas.collides(borders);
+
+for (let i = 0; i < rottenPizzas.length; i++) { // keeps rotten pizzas moving 
+let r = rottenPizzas[i];
+if (abs(r.vel.x) < 0.5) {
+r.vel.x = random(-3, 3);
+}
+if (abs(r.vel.y) < 0.5) {
+r.vel.y = random(-3, 3);
+}
+}
+
 } else {
 player.vel.x = 0;
 player.vel.y = 0;
@@ -207,6 +263,15 @@ text("YOU WIN!", width / 2, height / 2);
 text("GAME OVER!", width / 2, height / 2);
 }
 }
+
+for (let i = particles.length -1; i >= 0; i--) { // update and remove particles
+particles[i].update();
+particles[i].show();
+if (particles[i].finished()) {
+particles.splice(i, 1);
+}
+}
+
 }
 
 function collectPizza(player, pizza) { // collect fresh pizzas
@@ -217,8 +282,31 @@ pizza.x = random(100, 700);
 pizza.y = random(100, 500);
 }
 
-function hitRottenPizza(player, pizza) { // hit rotten pizzas 
-health--
+function hitRottenPizza(player, pizza) { // hit pizzas/pizza respawn
+pizza.health--;
+badSound.play();
+
+createParticles(pizza.x, pizza.y); // particle effect
+if (pizza.health <= 0) {
+pizza.health = 3;
+
+pizza.x = random(100, 700);
+pizza.y = random(100, 500);
+ 
+pizza.vel.x = random(-3, 3);
+pizza.vel.y = random(-3, 3);
+}
+}
+
+function createParticles(x, y) {
+for (let i = 0; i < 5; i++) {
+let p = new Particle(x, y);
+particles.push(p);
+}
+}
+
+function hurtPlayer(player, pizza) { // damage player health
+health--;
 badSound.play();
 
 pizza.x = random(100, 700);
