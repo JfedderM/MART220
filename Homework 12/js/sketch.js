@@ -1,21 +1,23 @@
+// I had fun with this assignment, i used examples from the lessons.
+// I was struggling with adding a title and my name. Used chatgpt to help me the text and debugging.
 
-let pg;
+let pg; // graphics for text
 
 function setup() {
-createCanvas(800, 600, WEBGL);
+createCanvas(800, 600, WEBGL); // make 3D canvas
 
-pg = createGraphics(300, 100);
+pg = createGraphics(300, 100); // ofscreen graphics for text
 
 }
 
 function draw() {
 background(200);
 
-ambientLight(150);
+ambientLight(150); // basic light
 
 push(); // cube left
 normalMaterial();
-translate(-200, 0, 0); // move cube position left
+translate(-200, 0, 0);
 rotateX(frameCount * 0.01);
 rotateY(frameCount * 0.01);
 box(100);
@@ -52,7 +54,7 @@ rotateY(frameCount * 0.02);
 torus(60, 20);
 pop();
 
-pg.clear();
+pg.clear(); 
 pg.fill(0);
 pg.textAlign(CENTER, CENTER);
 
@@ -63,7 +65,7 @@ pg.textSize(20);
 pg.text("Feather", 150, 70);
 
 push();
-translate(0, 250, 0);
+translate(0, 250, 0); // text at bottom
 noStroke();
 texture(pg);
 plane(300, 100);
